@@ -260,6 +260,7 @@ doi: https://doi.org/10.1038/s41467-024-49846-1
 # Morphology-aware SVG Detection using Spatial Neighborhood Features
 
 ## Improving HEARTSVG: A Proxy Feature Approach for Spatial Transcriptomics
+## 프록시 추가를 통한 HEARTSVG의 한계점 보완 제안
 
 Project by: Taeyi Kim (김태이)
 Base Method: HEARTSVG
@@ -374,33 +375,4 @@ Density Proxy: 암의 성장과 증식(Core) 규명 특화
 Entropy Proxy: 암의 전이와 면역 반응(Boundary) 규명 특화
 
 이는 향후 대규모 공간 전사체 데이터를 저비용으로 신속하게 분석하여 질병의 단계와 특성을 입체적으로 파악하는 새로운 분석 프레임워크가 될 수 있습니다.
-
-💻 How to Run
-
-본 레포지토리의 코드는 R 환경에서 실행됩니다.
-
-# 1. Clone Repository
-git clone [https://github.com/EH-OI/HEARTSVG.git](https://github.com/EH-OI/HEARTSVG.git)
-
-# 2. Setup Environment (Conda recommended)
-conda create -n heartsvg_env python=3.8
-conda activate heartsvg_env
-conda install -c conda-forge r-base r-devtools r-fnn
-
-# 3. Run Analysis (in R)
-# See 'analysis_script.R' or specific step scripts in the folder
-
-
-References
-
-Original Paper: HEARTSVG: a fast and accurate method for identifying spatially variable genes in large-scale spatial transcriptomics
-
-Original Repo: cz0316/HEARTSVG
-
-
-**[💡 사용 팁]**
-* 위 코드 블록의 내용을 복사해서 `README.md` 파일에 덮어쓰시면 됩니다.
-* **이미지 경로 수정:** `![Baseline](HEARTSVG/step1_baseline_MT-ATP6.png)` 부분의 경로가 실제 깃허브 폴더 구조와 맞는지 확인해주세요. (만약 이미지를 `images` 폴더에 따로 넣으셨다면 `images/파일명.png`로 수정하시면 됩니다.)
-
-
 
