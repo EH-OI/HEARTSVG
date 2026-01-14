@@ -256,6 +256,151 @@ Yuan, X., Ma, Y., Gao, R. et al. HEARTSVG: a fast and accurate method for identi
 
 doi: https://doi.org/10.1038/s41467-024-49846-1
 
+---
+# Morphology-aware SVG Detection using Spatial Neighborhood Features
+
+## Improving HEARTSVG: A Proxy Feature Approach for Spatial Transcriptomics
+
+Project by: Taeyi Kim (김태이)
+Base Method: HEARTSVG
+
+📌 Project Overview
+
+이 프로젝트는 대규모 공간 전사체(Spatial Transcriptomics) 데이터 분석 툴인 HEARTSVG를 심층 분석하고, 기존 알고리즘의 한계를 보완하는 새로운 방법론(Morphology-aware Proxy Features)을 제안 및 검증한 연구입니다.
+
+연구는 다음 세 단계로 진행되었습니다:
+
+Paper Review: HEARTSVG 논문 분석 및 기존 방법론 비교
+
+Code Analysis: 알고리즘 로직 분석 및 데모 데이터 구동
+
+Improvement Proposal (Core): 한계점 도출 및 Proxy Feature(조직밀집도, 엔트로피) 제안
+
+1. Background & Limitations
+
+1.1 HEARTSVG Overview
+
+HEARTSVG는 비모수적(Distribution-free) 통계 검정 방식을 사용하여 대규모 공간 전사체 데이터에서 **공간 변이 유전자(SVG)**를 빠르고 정확하게 식별하는 알고리즘입니다.
+
+1.2 Problem Definition (한계점)
+
+HEARTSVG는 공간 좌표($x, y$)와 발현량($e$)만을 변수로 사용합니다. 이로 인해 다음과 같은 한계가 존재합니다.
+
+형태학적 정보(Morphology) 부재: 조직의 밀도나 경계선 같은 병리학적 특징을 반영하지 못함.
+
+단순 구조적 마커 편향: 단순히 세포가 많이 뭉쳐있는 곳의 유전자(예: 미토콘드리아 유전자, Housekeeping gene)가 최상위 랭크(Rank 1~10)를 차지하는 경향이 있음.
+
+Disease-relevant Gene 누락: 정작 암의 증식이나 전이와 관련된 핵심 유전자는 발현량이 낮거나 국소적이어서 하위권으로 밀려나는 문제 발생.
+
+2. Proposed Method: Proxy Features
+
+H&E 염색 이미지와 같은 외부 데이터 없이, 오직 좌표와 발현 데이터만으로 조직의 형태학적 특징을 추정하는 두 가지 **'Proxy Feature'**를 고안하여 기존 알고리즘에 가중치로 적용했습니다.
+
+🛠️ Method 1: Local Density Score (조직 밀집도)
+
+가설: 암 조직은 세포 분열이 활발하여 정상 조직보다 세포 밀도가 높다. 따라서 밀도가 높은 영역의 유전자는 암의 증식/생존과 직결될 것이다.
+
+구현: $k$-NN ($k=10$) 알고리즘을 이용해 이웃 간 평균 거리의 역수로 밀도 점수 산출.
+
+
+$$Density \propto \frac{1}{\text{mean(distance to k-neighbors)}}$$
+
+🛠️ Method 2: Neighborhood Entropy (이웃 다양성)
+
+가설: 암세포와 정상 세포가 맞닿는 **'종양 경계선'**이나 **'미세환경(TME)'**은 다양한 세포가 혼재되어 있다. 복잡성이 높은 곳의 유전자는 면역 반응/침윤과 관련이 깊다.
+
+구현: 비지도 학습(K-means)으로 가상의 라벨을 부여한 뒤, 주변 이웃($k=20$)의 Shannon Entropy 계산.
+
+3. Experiment Results
+
+논문에서 사용된 대장암(Colorectal Cancer, CRC) 데이터를 사용하여 Baseline(기존)과 제안 모델(Proxy 적용)을 비교 분석했습니다.
+
+📊 1. Baseline (HEARTSVG Original)
+
+Top Rank: MT-ATP6, MT-CO2 (미토콘드리아 유전자), B2M (6위)
+
+해석: 단순히 세포가 존재하는 위치나 구조적 특징만을 포착함. 병리학적 의미가 부족함.
+
+📊 2. Improvement with Density Proxy
+
+Top Rank: LGR5 (4위), UHRF1 (2위)
+
+성과:
+
+기존 3,042위였던 대장암 줄기세포 마커 **LGR5**를 4위로 급상승시킴.
+
+암세포 증식 마커 UHRF1을 2위로 식별.
+
+의의: 암세포가 가장 빽빽하게 뭉쳐있는 **'종양 핵심부(Tumor Core)'**를 정확히 타격함.
+
+📊 3. Improvement with Entropy Proxy
+
+Top Rank: IGLV6-57 (6위), COL10A1, MMP7
+
+성과:
+
+면역 유전자(IGLV)와 기질/침윤 효소(COL, MMP)가 상위권 진입.
+
+조직 전반에 균일한 B2M은 6위 $\to$ 5,982위로 하락 (단순 배경 신호 필터링).
+
+의의: 암세포와 주변 환경이 상호작용하는 **'종양 미세환경(TME) 및 경계선'**을 성공적으로 포착함.
+
+🖼️ Visualization Comparison
+
+Baseline (Noise/Structure)
+
+Density Proxy (Tumor Core)
+
+Entropy Proxy (Boundary/TME)
+
+
+
+
+
+
+
+MT-ATP6 (Rank 1)
+
+LGR5 (Rank 4)
+
+DSCR8 / IGLV6-57
+
+4. Conclusion
+
+본 연구는 고가의 이미지 데이터 처리 과정 없이, **좌표 기반의 수치적 프록시(Density, Entropy)**만으로도 HEARTSVG의 생물학적 민감도를 획기적으로 개선할 수 있음을 입증했습니다.
+
+Density Proxy: 암의 성장과 증식(Core) 규명 특화
+
+Entropy Proxy: 암의 전이와 면역 반응(Boundary) 규명 특화
+
+이는 향후 대규모 공간 전사체 데이터를 저비용으로 신속하게 분석하여 질병의 단계와 특성을 입체적으로 파악하는 새로운 분석 프레임워크가 될 수 있습니다.
+
+💻 How to Run
+
+본 레포지토리의 코드는 R 환경에서 실행됩니다.
+
+# 1. Clone Repository
+git clone [https://github.com/EH-OI/HEARTSVG.git](https://github.com/EH-OI/HEARTSVG.git)
+
+# 2. Setup Environment (Conda recommended)
+conda create -n heartsvg_env python=3.8
+conda activate heartsvg_env
+conda install -c conda-forge r-base r-devtools r-fnn
+
+# 3. Run Analysis (in R)
+# See 'analysis_script.R' or specific step scripts in the folder
+
+
+References
+
+Original Paper: HEARTSVG: a fast and accurate method for identifying spatially variable genes in large-scale spatial transcriptomics
+
+Original Repo: cz0316/HEARTSVG
+
+
+**[💡 사용 팁]**
+* 위 코드 블록의 내용을 복사해서 `README.md` 파일에 덮어쓰시면 됩니다.
+* **이미지 경로 수정:** `![Baseline](HEARTSVG/step1_baseline_MT-ATP6.png)` 부분의 경로가 실제 깃허브 폴더 구조와 맞는지 확인해주세요. (만약 이미지를 `images` 폴더에 따로 넣으셨다면 `images/파일명.png`로 수정하시면 됩니다.)
 
 
 
